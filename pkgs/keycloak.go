@@ -58,7 +58,7 @@ func (c *KeyCloakClient) getUserId(username string) (string, error) {
 		return "",fmt.Errorf("%v",err)
 	}
 	if len(user) == 0 {
-		return "", errors.New("it's seem like the user is not exist, please try another name")
+		return "", errors.New("it seems like the user does not exist, please try another username")
 	} else {
 		return *user[0].ID, nil
 	}
@@ -71,7 +71,7 @@ func (c *KeyCloakClient) getFedUserId( userId string) (string, error) {
 		return "",fmt.Errorf("%v",err)
 	}
 	if len(userFedId) == 0 {
-		return "", errors.New("ooops! May be this user didn't connect into any Id Provider")
+		return "", errors.New("oops! it seems this user didn't connect to any id provider.")
 
 	} else {
 		return *userFedId[0].UserID, nil
