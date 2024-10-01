@@ -71,7 +71,7 @@ func (c *KeyCloakClient) getFedUserId( userId string) (string, error) {
 		return "",fmt.Errorf("%v",err)
 	}
 	if len(userFedId) == 0 {
-		return "", errors.New("oops! it seems this user didn't connect to any id provider.")
+		return "", errors.New("oops! it seems this user didn't connect to any id provider")
 
 	} else {
 		return *userFedId[0].UserID, nil
