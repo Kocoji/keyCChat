@@ -7,7 +7,6 @@
         [
             "semantic-release",
             {
-                "jiraHost": "task.sendo.vn",
                 "preset": "conventionalcommits",
                 "presetConfig": {
                     "types": [
