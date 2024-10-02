@@ -5,7 +5,7 @@
     "plugins": [
         "@semantic-release/commit-analyzer",
         [
-            "semantic-release",
+            "semantic-release/release-notes-generator",
             {
                 "preset": "conventionalcommits",
                 "presetConfig": {
@@ -26,7 +26,6 @@
                     ]
                 }
             }
-        ],
-        "@semantic-release/gitlab"
+        ]
     ]
 }
