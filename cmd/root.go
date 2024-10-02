@@ -9,11 +9,9 @@ import (
 )
 
 var rootCmd = &cobra.Command{
-	Use:   "hugo",
-	Short: "Hugo is a very fast static site generator",
-	Long: `A Fast and Flexible Static Site Generator built with
-				  love by spf13 and friends in Go.
-				  Complete documentation is available at http://hugo.spf13.com`,
+	Use:   "ias-uid",
+	Short: "Get user info from Keycloak",
+	Long: ``,
 	Run: func(cmd *cobra.Command, args []string) {
 		// Do Stuff Here
 	},
@@ -26,17 +24,15 @@ func init() {
 
 var versionCmd = &cobra.Command{
 	Use:   "version",
-	Short: "Print the version number of Hugo",
-	Long:  `All software has versions. This is Hugo's`,
+	Short: "not yet",
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("Hugo Static Site Generator v0.9 -- HEAD")
+		fmt.Println("not yet -- HEAD")
 	},
 }
 
 var getFedUserIdCmd = &cobra.Command{
 	Use:   "getfuid",
-	Short: "Get Federal ID from input username",
-	Long:  "Get Federal ID from input username",
+	Short: "Get Federal ID from username",
 	Args:  cobra.MinimumNArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
 
