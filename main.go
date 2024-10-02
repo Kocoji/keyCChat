@@ -22,5 +22,8 @@ func main() {
 	password := os.Getenv("PASSWORD")
 
 	kc, err := keycloak.InitKeyCloak(host,clientId,clientSecret,realm,user,password)
-	kc.GetFUIdFromUId("kocojxi")
+	if err != nil {
+		os.Exit(2)
+	}
+	println(kc.GetFUIdFromUId("kocoji"))
 }
