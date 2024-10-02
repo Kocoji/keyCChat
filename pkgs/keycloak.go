@@ -35,7 +35,7 @@ func InitKeyCloak() (KeyCloakClient, error) {
 	token, err := client.Login(ctx, clientId, clientSecret, realm, user, password)
 	if err != nil {
 		log.Fatal("Cannot init keycloak client")
-		log.Fatal(err)
+		panic(err)
 	}
 	return KeyCloakClient{
 		client: client,
