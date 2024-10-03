@@ -11,10 +11,12 @@ import (
 )
 
 type KeyCloakClient struct {
-	client *gocloak.GoCloak
-	ctx    context.Context
-	token  *gocloak.JWT
-	realm  string
+	client   *gocloak.GoCloak
+	ctx      context.Context
+	token    *gocloak.JWT
+	realm    string
+	clientId string
+	clientSecret string
 }
 
 type User struct {
@@ -38,19 +40,21 @@ func InitKeyCloak() (KeyCloakClient, error) {
 		panic(err)
 	}
 	return KeyCloakClient{
-		client: client,
-		ctx:    ctx,
-		token:  token,
-		realm:  realm}, nil
+		client:   client,
+		ctx:      ctx,
+		token:    token,
+		realm:    realm,
+		clientId: clientId,
+		clientSecret: clientSecret,}, nil
 }
 
-func (c *KeyCloakClient) GetFUIdFromUId(username string) string {
-	uid, err := c.getUserId(username)
+func (k *KeyCloakClient) GetFUIdFromUId(username string) string {
+	uid, err := k.getUserId(username)
 	if err != nil {
 		log.Println(err)
 		return ""
 	}
-	userFedId, err := c.getFedUserId(uid)
+	userFedId, err := k.getFedUserId(uid)
 	if err != nil {
 		log.Println("Not exist ", err)
 	}
@@ -58,8 +62,8 @@ func (c *KeyCloakClient) GetFUIdFromUId(username string) string {
 }
 
 // this func get the list of
-func (c *KeyCloakClient) getUserId(username string) (string, error) {
-	user, err := c.client.GetUsers(c.ctx, c.token.AccessToken, c.realm, gocloak.GetUsersParams{Username: gocloak.StringP(username)})
+func (k *KeyCloakClient) getUserId(username string) (string, error) {
+	user, err := k.client.GetUsers(k.ctx, k.token.AccessToken, k.realm, gocloak.GetUsersParams{Username: gocloak.StringP(username)})
 	if err != nil {
 		fmt.Println("client error:", err)
 		return "", fmt.Errorf("%v", err)
@@ -71,8 +75,16 @@ func (c *KeyCloakClient) getUserId(username string) (string, error) {
 	}
 }
 
-func (c *KeyCloakClient) getFedUserId(userId string) (string, error) {
-	userFedId, err := c.client.GetUserFederatedIdentities(c.ctx, c.token.AccessToken, c.realm, userId)
+func (k *KeyCloakClient) Logout() error {
+	e := k.client.Logout(k.ctx,k.clientId, k.clientSecret,k.realm,k.token.RefreshToken )
+	if e !=nil {
+		println(e)
+	}
+	return nil
+}
+
+func (k *KeyCloakClient) getFedUserId(userId string) (string, error) {
+	userFedId, err := k.client.GetUserFederatedIdentities(k.ctx, k.token.AccessToken, k.realm, userId)
 	if err != nil {
 		log.Println("client error:", err)
 		return "", fmt.Errorf("%v", err)
