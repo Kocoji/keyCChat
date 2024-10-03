@@ -26,6 +26,6 @@
                     ]
                 }
             }
-        ]
+        ],"@semantic-release/changelog"
     ]
 }
