@@ -38,10 +38,9 @@ var getFedUserIdCmd = &cobra.Command{
 
 		kc, err := keycloak.InitKeyCloak()
 		if err != nil {
-			// os.Exit(2)
-			println(err)
+			os.Exit(2)
 		}
-		println(kc.GetFUIdFromUId(args[0]))
+		fmt.Println(kc.GetFUIdFromUId(args[0]))
 		kc.Logout()
 
 	},
