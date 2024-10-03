@@ -16,6 +16,7 @@ type KeyCloakClient struct {
 	token    *gocloak.JWT
 	realm    string
 	clientId string
+	clientSecret string
 }
 
 type User struct {
@@ -43,7 +44,8 @@ func InitKeyCloak() (KeyCloakClient, error) {
 		ctx:      ctx,
 		token:    token,
 		realm:    realm,
-		clientId: clientId}, nil
+		clientId: clientId,
+		clientSecret: clientSecret,}, nil
 }
 
 func (k *KeyCloakClient) GetFUIdFromUId(username string) string {
@@ -74,11 +76,10 @@ func (k *KeyCloakClient) getUserId(username string) (string, error) {
 }
 
 func (k *KeyCloakClient) Logout() error {
-	ss, err := k.client.GetClientUserSessions(k.ctx, k.token.AccessToken, k.realm, k.clientId)
-	if err != nil {
-		fmt.Println(err)
+	e := k.client.Logout(k.ctx,k.clientId, k.clientSecret,k.realm,k.token.RefreshToken )
+	if e !=nil {
+		println(e)
 	}
-	fmt.Println(ss)
 	return nil
 }
 

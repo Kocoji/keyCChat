@@ -42,6 +42,7 @@ var getFedUserIdCmd = &cobra.Command{
 			println(err)
 		}
 		println(kc.GetFUIdFromUId(args[0]))
+		kc.Logout()
 
 	},
 }
