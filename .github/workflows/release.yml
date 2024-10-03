@@ -5,7 +5,8 @@ on:
       - 'README.md'
       - '*.example'
     branches:
-      - main # or main
+      - main 
+      - dev
 
 permissions:
   contents: read # for checkout
