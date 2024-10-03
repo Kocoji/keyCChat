@@ -34,7 +34,7 @@ func InitKeyCloak() (KeyCloakClient, error) {
 
 	client := gocloak.NewClient(host)
 	ctx := context.Background()
-	token, err := client.Login(ctx, clientId, clientSecret, realm, user, password)
+	token, err := client.Login(ctx, clientId, clientSecret, "master", user, password)
 	if err != nil {
 		log.Fatal("Cannot init keycloak client")
 		panic(err)
@@ -76,7 +76,7 @@ func (k *KeyCloakClient) getUserId(username string) (string, error) {
 }
 
 func (k *KeyCloakClient) Logout() error {
-	e := k.client.Logout(k.ctx,k.clientId, k.clientSecret,k.realm,k.token.RefreshToken )
+	e := k.client.Logout(k.ctx,k.clientId, k.clientSecret,"master",k.token.RefreshToken )
 	if e !=nil {
 		println(e)
 	}
