@@ -26,7 +26,7 @@ var versionCmd = &cobra.Command{
 	Use:   "version",
 	Short: "not yet",
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("not yet -- HEAD")
+		fmt.Println("__VERSION__ =")
 	},
 }
 
