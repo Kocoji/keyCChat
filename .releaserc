@@ -14,27 +14,9 @@
         [
             "@semantic-release/release-notes-generator",
             {
-                "preset": "conventionalcommits",
-                "presetConfig": {
-                    "types": [
-                        {
-                            "type": "feat",
-                            "section": "Features"
-                        },
-                        {
-                            "type": "fix",
-                            "section": "Bug Fixes"
-                        },
-                        {
-                            "type": "build",
-                            "section": "Dependencies Updates",
-                            "hidden": false
-                        }
-                    ]
-                }
+                "preset": "conventionalcommits"
             }
         ],
-        "@semantic-release/changelog",
         [
             "semantic-release-replace-plugin",
             {
@@ -43,8 +25,8 @@
                         "files": [
                             "cmd/root.go"
                         ],
-                        "from": "__VERSION__ = \".*\"",
-                        "to": "__VERSION__ = \"${nextRelease.version}\"",
+                        "from": "\".*.-- HEAD\"",
+                        "to": "\"${nextRelease.version} -- HEAD\"",
                         "results": [
                             {
                                 "file": "cmd/root.go",
