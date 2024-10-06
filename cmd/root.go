@@ -26,7 +26,7 @@ var versionCmd = &cobra.Command{
 	Use:   "version",
 	Short: "not yet",
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("1.3.0-dev.1 -- HEAD")
+		fmt.Println("1.3.0-dev.2 -- HEAD")
 	},
 }
 
