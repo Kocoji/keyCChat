@@ -6,6 +6,7 @@ import (
 	"os"
 
 	"github.com/spf13/cobra"
+	"notify-chat/pkgs/google"
 )
 
 var rootCmd = &cobra.Command{
@@ -14,6 +15,7 @@ var rootCmd = &cobra.Command{
 	Long: ``,
 	Run: func(cmd *cobra.Command, args []string) {
 		// Do Stuff Here
+		// google.Init_client()
 	},
 }
 
@@ -42,6 +44,16 @@ var getFedUserIdCmd = &cobra.Command{
 		}
 		fmt.Println(kc.GetFUIdFromUId(args[0]))
 		kc.Logout()
+
+	},
+}
+
+var chat = &cobra.Command{
+	Use:   "chat",
+	Short: "botchat",
+	Args:  cobra.MinimumNArgs(1),
+	Run: func(cmd *cobra.Command, args []string) {
+		google.Handler()
 
 	},
 }
