@@ -16,8 +16,7 @@ type Payload struct {
 		FromStatus     string `json:"from_status"`
 		ToStatus       string `json:"to_status"`
 	} `json:"transition"`
-	Comment string `json:"comment"`
-	User    struct {
+	User struct {
 		Self         string `json:"self"`
 		Name         string `json:"name"`
 		Key          string `json:"key"`
@@ -146,9 +145,22 @@ type Payload struct {
 			Duedate          interface{} `json:"duedate"`
 		} `json:"fields"`
 	} `json:"issue"`
+	Changelog struct {
+		ID    string `json:"id"`
+		Items []struct {
+			Field      string `json:"field"`
+			Fieldtype  string `json:"fieldtype"`
+			From       string `json:"from"`
+			FromString string `json:"fromString"`
+			To         string `json:"to"`
+			ToString   string `json:"toString"`
+		} `json:"items"`
+	} `json:"changelog"`
 }
 
-func Handler() {
+
+// I need to put link to docs here.
+func Handler() error {
 	var Payload Payload
 	b, e := os.ReadFile("Sample/task.json")
 	if e != nil {
@@ -157,31 +169,33 @@ func Handler() {
 	if err := json.Unmarshal(b, &Payload); err != nil { // Parse []byte to go struct pointer
 		fmt.Println("Can not unmarshal JSON")
 	}
-	fmt.Println(PrettyPrint(Payload.Issue.Fields.Issuetype.Name))
+	fmt.Println(PrettyPrint(Payload))
+
 
 	issueType := Payload.Issue.Fields.Issuetype.Name
 	issueKey := Payload.Issue.Key
 
 	client := Init_client()
 	switch issueType {
-	case "task", "DevOps":
+	case "Task", "DevOps":
 		err := client.GetMsg(issueKey)
 		if err != nil {
 			// in the create new msg with the same issuekey
 			client.SendMsg(issueKey, issueKey)
 		}
 		log.Print("exist")
-	case "subtask", "Sub-DevOps":
+		client.UpdateMsg(issueKey, issueKey)
+	case "Subtask", "Sub-DevOps":
 		parentIssue := Payload.Issue.Fields.Parent.Key
-
-		err := client.GetMsg(issueKey)
+		err := client.GetMsg(parentIssue)
 		if err != nil {
 			// in the create new msg with the same issuekey
 			client.SendMsg(issueKey, parentIssue)
 		}
 		log.Print("exist")
+		client.UpdateMsg(issueKey, issueKey)
 	}
-
+	return nil
 }
 
 func PrettyPrint(i interface{}) string {

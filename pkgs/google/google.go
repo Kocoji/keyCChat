@@ -16,9 +16,6 @@ type Client struct {
 	space string
 }
 
-type Fields struct {
-	spaces string;
-}
 
 func Init_client() Client {
 	space := os.Getenv("GC_SPACE")
@@ -55,15 +52,15 @@ func (c *Client) SendMsg(threadKey string, msid string) error {
 	// fmt.Println("res: ", r)
 }
 
-func (c *Client) UpdateMsg() {
+func (c *Client) UpdateMsg(threadKey string,msid string) {
 	space := c.space
-	msgId := "client-6732"
+	msgId := "client-" + strings.ToLower(msid)
 	name := "spaces/" + space + "/messages/" + msgId
 
 	msg := chat.Message{
 		Text: "Hello ahihi  d!s",
 		Thread: &chat.Thread{
-			ThreadKey: "ahihi123",
+			ThreadKey: threadKey,
 		},
 	}
 	r, err := c.client.Spaces.Messages.Update(name, &msg).UpdateMask("text").Do()

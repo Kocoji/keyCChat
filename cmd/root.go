@@ -22,6 +22,7 @@ var rootCmd = &cobra.Command{
 func init() {
 	rootCmd.AddCommand(versionCmd)
 	rootCmd.AddCommand(getFedUserIdCmd)
+	rootCmd.AddCommand(chat)
 }
 
 var versionCmd = &cobra.Command{
@@ -51,7 +52,6 @@ var getFedUserIdCmd = &cobra.Command{
 var chat = &cobra.Command{
 	Use:   "chat",
 	Short: "botchat",
-	Args:  cobra.MinimumNArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
 		google.Handler()
 
