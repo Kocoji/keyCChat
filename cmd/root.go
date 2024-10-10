@@ -6,7 +6,7 @@ import (
 	"os"
 
 	"github.com/spf13/cobra"
-	"notify-chat/pkgs/google"
+	"notify-chat/handler"
 )
 
 var rootCmd = &cobra.Command{
@@ -53,8 +53,7 @@ var chat = &cobra.Command{
 	Use:   "chat",
 	Short: "botchat",
 	Run: func(cmd *cobra.Command, args []string) {
-		google.Handler()
-
+		handler.Handler()
 	},
 }
 

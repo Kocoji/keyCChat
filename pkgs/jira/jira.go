@@ -1,11 +1,13 @@
-package google
+package jira
 
 import (
 	"encoding/json"
 	"fmt"
-	"log"
+	"io"
+	"net/http"
 	"os"
 )
+
 
 type Payload struct {
 	Transition struct {
@@ -89,7 +91,6 @@ type Payload struct {
 					Name      string `json:"name"`
 				} `json:"statusCategory"`
 			} `json:"status"`
-			Archiveddate          interface{} `json:"archiveddate"`
 			Customfield11017      interface{} `json:"customfield_11017"`
 			Aggregatetimeestimate interface{} `json:"aggregatetimeestimate"`
 			Customfield11090      interface{} `json:"customfield_11090"`
@@ -158,47 +159,37 @@ type Payload struct {
 	} `json:"changelog"`
 }
 
+func GetIssue(issueId string) (pl Payload, err error) {
+	url := "https://task.sendo.vn/rest/api/2/issue/"+issueId
+	method := "GET"
 
-// I need to put link to docs here.
-func Handler() error {
-	var Payload Payload
-	b, e := os.ReadFile("Sample/task.json")
+	jiraToken := os.Getenv("JIRA_TOKEN")
+
+	client := &http.Client{}
+	req, e := http.NewRequest(method, url, nil)
+
 	if e != nil {
-		print(e)
+		fmt.Println(e)
+		return pl, e
 	}
-	if err := json.Unmarshal(b, &Payload); err != nil { // Parse []byte to go struct pointer
+	req.Header.Add("Authorization", "Bearer "+jiraToken)
+
+	res, e := client.Do(req)
+	if e != nil {
+		fmt.Println(e)
+		return pl, e
+	}
+	defer res.Body.Close()
+
+	body, e := io.ReadAll(res.Body)
+	if e != nil {
+		fmt.Println(e)
+		return pl, e
+	}
+
+	fmt.Println(string(body))
+	if err := json.Unmarshal(body, &pl); err != nil { // Parse []byte to go struct pointer
 		fmt.Println("Can not unmarshal JSON")
 	}
-	fmt.Println(PrettyPrint(Payload))
-
-
-	issueType := Payload.Issue.Fields.Issuetype.Name
-	issueKey := Payload.Issue.Key
-
-	client := Init_client()
-	switch issueType {
-	case "Task", "DevOps":
-		err := client.GetMsg(issueKey)
-		if err != nil {
-			// in the create new msg with the same issuekey
-			client.SendMsg(issueKey, issueKey)
-		}
-		log.Print("exist")
-		client.UpdateMsg(issueKey, issueKey)
-	case "Subtask", "Sub-DevOps":
-		parentIssue := Payload.Issue.Fields.Parent.Key
-		err := client.GetMsg(parentIssue)
-		if err != nil {
-			// in the create new msg with the same issuekey
-			client.SendMsg(issueKey, parentIssue)
-		}
-		log.Print("exist")
-		client.UpdateMsg(issueKey, issueKey)
-	}
-	return nil
-}
-
-func PrettyPrint(i interface{}) string {
-	s, _ := json.MarshalIndent(i, "", "\t")
-	return string(s)
+	return pl, nil
 }

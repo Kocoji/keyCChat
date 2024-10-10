@@ -13,9 +13,8 @@ import (
 
 type Client struct {
 	client *chat.Service
-	space string
+	space  string
 }
-
 
 func Init_client() Client {
 	space := os.Getenv("GC_SPACE")
@@ -25,21 +24,26 @@ func Init_client() Client {
 	if err != nil {
 		fmt.Println("OOPS", err)
 	}
-	fmt.Printf("%+v\n", client)
-
 	// client.Spaces.Messages
 	return Client{
 		client: client,
-		space: space,
+		space:  space,
 	}
 }
 
 // this func use to send a new message, so issueType: Task, DevOps use this func.
-func (c *Client) SendMsg(threadKey string, msid string) error {
+func (c *Client) SendMsg(issueId string, parentIss string, mesg string, changelog string) error {
+	msgId := "client-" + strings.ToLower(issueId)
+	
+	threadKey := issueId
 	spacepath := "spaces/" + c.space
-	msgId := "client-" + strings.ToLower(msid)
+
+	if parentIss != "" {
+		msgId = "client-" + strings.ToLower(issueId) +"-"+ changelog
+		threadKey = "client-" + strings.ToLower(issueId)
+	}
 	msg := chat.Message{
-		Text: "Hello world!6733",
+		Text: mesg,
 		Thread: &chat.Thread{
 			ThreadKey: threadKey,
 		},
@@ -52,7 +56,7 @@ func (c *Client) SendMsg(threadKey string, msid string) error {
 	// fmt.Println("res: ", r)
 }
 
-func (c *Client) UpdateMsg(threadKey string,msid string) {
+func (c *Client) UpdateMsg(threadKey string, msid string) {
 	space := c.space
 	msgId := "client-" + strings.ToLower(msid)
 	name := "spaces/" + space + "/messages/" + msgId
@@ -74,11 +78,11 @@ func (c *Client) GetMsg(msid string) error {
 	msgId := "client-" + strings.ToLower(msid)
 	space := c.space
 	name := "spaces/" + space + "/messages/" + msgId
-	res,err := c.client.Spaces.Messages.Get(name).Do()
-	if err !=nil {
+	_, err := c.client.Spaces.Messages.Get(name).Do()
+	if err != nil {
 		fmt.Print(err)
 		return fmt.Errorf("problem")
 	}
-	fmt.Print(res)
+	// fmt.Print(res)
 	return nil
 }
