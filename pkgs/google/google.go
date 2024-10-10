@@ -32,16 +32,17 @@ func Init_client() Client {
 }
 
 // this func use to send a new message, so issueType: Task, DevOps use this func.
-func (c *Client) SendMsg(issueId string, parentIss string, mesg string, changelog string) error {
+func (c *Client) SendMsg(issueId string, parentIss string, mesg string, changelogId string) error {
 	msgId := "client-" + strings.ToLower(issueId)
-	
+
 	threadKey := issueId
 	spacepath := "spaces/" + c.space
 
 	if parentIss != "" {
-		msgId = "client-" + strings.ToLower(issueId) +"-"+ changelog
-		threadKey = "client-" + strings.ToLower(issueId)
+		msgId = "client-" + strings.ToLower(issueId) + "-" + changelogId
+		threadKey = parentIss
 	}
+	fmt.Println("msg id ",msgId)
 	msg := chat.Message{
 		Text: mesg,
 		Thread: &chat.Thread{
@@ -53,7 +54,6 @@ func (c *Client) SendMsg(issueId string, parentIss string, mesg string, changelo
 		log.Fatal(e)
 	}
 	return nil
-	// fmt.Println("res: ", r)
 }
 
 func (c *Client) UpdateMsg(threadKey string, msid string) {
@@ -62,7 +62,7 @@ func (c *Client) UpdateMsg(threadKey string, msid string) {
 	name := "spaces/" + space + "/messages/" + msgId
 
 	msg := chat.Message{
-		Text: "Hello ahihi  d!s",
+		Text: "Updated",
 		Thread: &chat.Thread{
 			ThreadKey: threadKey,
 		},
@@ -74,15 +74,16 @@ func (c *Client) UpdateMsg(threadKey string, msid string) {
 	fmt.Println("res: ", r)
 }
 
-func (c *Client) GetMsg(msid string) error {
-	msgId := "client-" + strings.ToLower(msid)
+// Get message by messageId and return data & bool true (exist)/false(not exist)
+func (c *Client) GetMsg(issueId string) (*chat.Message, bool) {
+	msgId := "client-" + strings.ToLower(issueId)
 	space := c.space
 	name := "spaces/" + space + "/messages/" + msgId
-	_, err := c.client.Spaces.Messages.Get(name).Do()
+	res, err := c.client.Spaces.Messages.Get(name).Do()
 	if err != nil {
-		fmt.Print(err)
-		return fmt.Errorf("problem")
+		log.Println(err)
+		return nil, false
 	}
 	// fmt.Print(res)
-	return nil
+	return res, true
 }

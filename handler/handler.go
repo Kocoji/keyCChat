@@ -4,11 +4,10 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
-	"os"
-	"notify-chat/pkgs/jira"
 	"notify-chat/pkgs/google"
+	"notify-chat/pkgs/jira"
+	"os"
 )
-
 
 // I need to put link to docs here.
 func Handler() error {
@@ -29,34 +28,37 @@ func Handler() error {
 	changeLog := Payload.Changelog.ID
 
 	client := google.Init_client()
+	
 	switch issueType {
 	case "Task", "DevOps":
-		err := client.GetMsg(issueKey)
-		if err != nil {
-			// in the create new msg with the same issuekey
-			client.SendMsg(issueKey,"", issueName,"")
-		} else {
-			log.Print("exist")
+		_, exist := client.GetMsg(issueKey)
+		if exist {
+			log.Println("exist")
 			// update main message and send a new message in Thread that mention assignee use.
 			client.UpdateMsg(issueKey, issueKey)
-			client.SendMsg(issueKey, "", issueName,changeLog)
+			client.SendMsg(issueKey, "", issueName, changeLog)
+		} else {
+			// in the create new msg with the same issuekey
+			client.SendMsg(issueKey, "", issueName, "")
 		}
 	case "Subtask", "Sub-DevOps":
 		parentIssue := Payload.Issue.Fields.Parent.Key
-		err := client.GetMsg(parentIssue)
-		if err != nil {
-			res, e := jira.GetIssue(parentIssue)
-			if e !=nil {
-				log.Println(e)
-			}
+		res, e := jira.GetIssue(parentIssue)
+		parentIssueSum := res.Fields.Summary
 
-			parentChangeLog := res.Changelog.ID
-			// in the create new msg with the same issuekey
-			client.SendMsg(parentIssue, parentIssue, issueName,parentChangeLog)
+		if e != nil {
+			log.Println(e)
+		}
+		_, exist := client.GetMsg(parentIssue)
+		if exist {
+			log.Println("exist")
+
+			client.UpdateMsg(parentIssue, parentIssue)
+			client.SendMsg(issueKey, parentIssue, issueName, changeLog)
+
 		} else {
-			log.Print("exist")
-			client.UpdateMsg(issueKey, issueKey)
-			client.SendMsg(issueKey, parentIssue, issueName,changeLog)
+			// in the create new msg with the same issuekey
+			client.SendMsg(parentIssue, "", parentIssueSum, "")
 		}
 	}
 	return nil

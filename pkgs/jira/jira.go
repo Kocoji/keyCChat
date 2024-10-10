@@ -8,7 +8,7 @@ import (
 	"os"
 )
 
-
+// the webhook payload
 type Payload struct {
 	Transition struct {
 		WorkflowID     int    `json:"workflowId"`
@@ -19,7 +19,6 @@ type Payload struct {
 		ToStatus       string `json:"to_status"`
 	} `json:"transition"`
 	User struct {
-		Self         string `json:"self"`
 		Name         string `json:"name"`
 		Key          string `json:"key"`
 		EmailAddress string `json:"emailAddress"`
@@ -28,23 +27,19 @@ type Payload struct {
 	} `json:"user"`
 	Issue struct {
 		ID     string `json:"id"`
-		Self   string `json:"self"`
 		Key    string `json:"key"`
 		Fields struct {
 			Parent struct {
 				ID     string `json:"id"`
 				Key    string `json:"key"`
-				Self   string `json:"self"`
 				Fields struct {
 					Summary string `json:"summary"`
 					Status  struct {
-						Self           string `json:"self"`
 						Description    string `json:"description"`
 						IconURL        string `json:"iconUrl"`
 						Name           string `json:"name"`
 						ID             string `json:"id"`
 						StatusCategory struct {
-							Self      string `json:"self"`
 							ID        int    `json:"id"`
 							Key       string `json:"key"`
 							ColorName string `json:"colorName"`
@@ -52,13 +47,11 @@ type Payload struct {
 						} `json:"statusCategory"`
 					} `json:"status"`
 					Priority struct {
-						Self    string `json:"self"`
 						IconURL string `json:"iconUrl"`
 						Name    string `json:"name"`
 						ID      string `json:"id"`
 					} `json:"priority"`
 					Issuetype struct {
-						Self        string `json:"self"`
 						ID          string `json:"id"`
 						Description string `json:"description"`
 						IconURL     string `json:"iconUrl"`
@@ -69,7 +62,6 @@ type Payload struct {
 				} `json:"fields"`
 			} `json:"parent"`
 			Assignee struct {
-				Self         string `json:"self"`
 				Name         string `json:"name"`
 				Key          string `json:"key"`
 				EmailAddress string `json:"emailAddress"`
@@ -78,13 +70,11 @@ type Payload struct {
 				TimeZone     string `json:"timeZone"`
 			} `json:"assignee"`
 			Status struct {
-				Self           string `json:"self"`
 				Description    string `json:"description"`
 				IconURL        string `json:"iconUrl"`
 				Name           string `json:"name"`
 				ID             string `json:"id"`
 				StatusCategory struct {
-					Self      string `json:"self"`
 					ID        int    `json:"id"`
 					Key       string `json:"key"`
 					ColorName string `json:"colorName"`
@@ -96,7 +86,6 @@ type Payload struct {
 			Customfield11090      interface{} `json:"customfield_11090"`
 			Customfield11091      interface{} `json:"customfield_11091"`
 			Creator               struct {
-				Self         string `json:"self"`
 				Name         string `json:"name"`
 				Key          string `json:"key"`
 				EmailAddress string `json:"emailAddress"`
@@ -111,19 +100,16 @@ type Payload struct {
 				Total    int `json:"total"`
 			} `json:"aggregateprogress"`
 			Customfield11403 struct {
-				Self     string `json:"self"`
 				Value    string `json:"value"`
 				ID       string `json:"id"`
 				Disabled bool   `json:"disabled"`
 				Child    struct {
-					Self     string `json:"self"`
 					Value    string `json:"value"`
 					ID       string `json:"id"`
 					Disabled bool   `json:"disabled"`
 				} `json:"child"`
 			} `json:"customfield_11403"`
 			Issuetype struct {
-				Self        string `json:"self"`
 				ID          string `json:"id"`
 				Description string `json:"description"`
 				Name        string `json:"name"`
@@ -131,7 +117,6 @@ type Payload struct {
 				AvatarID    int    `json:"avatarId"`
 			} `json:"issuetype"`
 			Project struct {
-				Self           string `json:"self"`
 				ID             string `json:"id"`
 				Key            string `json:"key"`
 				Name           string `json:"name"`
@@ -159,37 +144,95 @@ type Payload struct {
 	} `json:"changelog"`
 }
 
-func GetIssue(issueId string) (pl Payload, err error) {
-	url := "https://task.sendo.vn/rest/api/2/issue/"+issueId
-	method := "GET"
+type Response struct {
+	Expand string `json:"expand"`
+	ID     string `json:"id"`
+	Key    string `json:"key"`
+	Fields struct {
+		Summary          string `json:"summary"`
+		Customfield11403 struct {
+			Value    string `json:"value"`
+			ID       string `json:"id"`
+			Disabled bool   `json:"disabled"`
+			Child    struct {
+				Value    string `json:"value"`
+				ID       string `json:"id"`
+				Disabled bool   `json:"disabled"`
+			} `json:"child"`
+		} `json:"customfield_11403"`
+		Creator struct {
+			Name         string `json:"name"`
+			Key          string `json:"key"`
+			EmailAddress string `json:"emailAddress"`
+			DisplayName  string `json:"displayName"`
+			Active       bool   `json:"active"`
+			TimeZone     string `json:"timeZone"`
+		} `json:"creator"`
+		Description string `json:"description"`
+		Assignee    struct {
+			Name         string `json:"name"`
+			Key          string `json:"key"`
+			EmailAddress string `json:"emailAddress"`
+			DisplayName  string `json:"displayName"`
+			Active       bool   `json:"active"`
+			TimeZone     string `json:"timeZone"`
+		} `json:"assignee"`
+		Reporter struct {
+			Name         string `json:"name"`
+			Key          string `json:"key"`
+			EmailAddress string `json:"emailAddress"`
+			DisplayName  string `json:"displayName"`
+			Active       bool   `json:"active"`
+			TimeZone     string `json:"timeZone"`
+		} `json:"reporter"`
+		Status struct {
+			Description    string `json:"description"`
+			IconURL        string `json:"iconUrl"`
+			Name           string `json:"name"`
+			ID             string `json:"id"`
+			StatusCategory struct {
+				ID        int    `json:"id"`
+				Key       string `json:"key"`
+				ColorName string `json:"colorName"`
+				Name      string `json:"name"`
+			} `json:"statusCategory"`
+		} `json:"status"`
+	} `json:"fields"`
+}
 
+func GetIssue(issueId string) (res Response, err error) {
+
+	extraFields := "?fields=status,creator,assignee,customfield_11403,summary,description"
 	jiraToken := os.Getenv("JIRA_TOKEN")
+
+	url := "https://task.sendo.vn/rest/api/2/issue/" + issueId + extraFields
+	method := "GET"
 
 	client := &http.Client{}
 	req, e := http.NewRequest(method, url, nil)
 
 	if e != nil {
 		fmt.Println(e)
-		return pl, e
+		return res, e
 	}
 	req.Header.Add("Authorization", "Bearer "+jiraToken)
 
-	res, e := client.Do(req)
+	response, e := client.Do(req)
 	if e != nil {
 		fmt.Println(e)
-		return pl, e
+		return res, e
 	}
-	defer res.Body.Close()
+	defer response.Body.Close()
 
-	body, e := io.ReadAll(res.Body)
+	body, e := io.ReadAll(response.Body)
 	if e != nil {
 		fmt.Println(e)
-		return pl, e
+		return res, e
 	}
 
-	fmt.Println(string(body))
-	if err := json.Unmarshal(body, &pl); err != nil { // Parse []byte to go struct pointer
+	// fmt.Println(string(body))
+	if err := json.Unmarshal(body, &res); err != nil { // Parse []byte to go struct pointer
 		fmt.Println("Can not unmarshal JSON")
 	}
-	return pl, nil
+	return res, nil
 }
