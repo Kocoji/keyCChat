@@ -16,13 +16,16 @@ type Client struct {
 	space  string
 }
 
+type Msg struct {
+	msg chat.Message
+}
 func Init_client() Client {
 	space := os.Getenv("GC_SPACE")
 
 	ctx := context.Background()
 	client, err := chat.NewService(ctx, option.WithCredentialsFile("credentials.json"), option.WithScopes(chat.ChatBotScope))
 	if err != nil {
-		fmt.Println("OOPS", err)
+		fmt.Println("Oops", err)
 	}
 	// client.Spaces.Messages
 	return Client{

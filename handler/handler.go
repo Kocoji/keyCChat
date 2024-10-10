@@ -11,7 +11,7 @@ import (
 
 // I need to put link to docs here.
 func Handler() error {
-	var Payload jira.Payload
+	Payload := jira.Payload{}
 	b, e := os.ReadFile("Sample/task.json")
 	if e != nil {
 		print(e)
@@ -28,7 +28,7 @@ func Handler() error {
 	changeLog := Payload.Changelog.ID
 
 	client := google.Init_client()
-	
+
 	switch issueType {
 	case "Task", "DevOps":
 		_, exist := client.GetMsg(issueKey)
