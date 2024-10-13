@@ -17,7 +17,11 @@ type Client struct {
 }
 
 type Msg struct {
-	msg chat.Message
+	IssueId string
+	ParentId string
+	Descript string
+	Summary string
+	ChangelogId string
 }
 func Init_client() Client {
 	space := os.Getenv("GC_SPACE")
@@ -35,19 +39,21 @@ func Init_client() Client {
 }
 
 // this func use to send a new message, so issueType: Task, DevOps use this func.
-func (c *Client) SendMsg(issueId string, parentIss string, mesg string, changelogId string) error {
-	msgId := "client-" + strings.ToLower(issueId)
+func (c *Client) SendMsg(j Msg, thread bool) error {
+	msgId := "client-" + strings.ToLower(j.IssueId)
 
-	threadKey := issueId
+	threadKey := j.IssueId
 	spacepath := "spaces/" + c.space
 
-	if parentIss != "" {
-		msgId = "client-" + strings.ToLower(issueId) + "-" + changelogId
-		threadKey = parentIss
+	// if parrent not empty, send a message to Parent's thread message.
+	if j.ParentId != "" {
+		// uncommend in 
+		// msgId = "client-" + strings.ToLower(j.IssueId) + "-" + j.ChangelogId
+		threadKey = j.ParentId
 	}
 	fmt.Println("msg id ",msgId)
 	msg := chat.Message{
-		Text: mesg,
+		Text: j.Descript,
 		Thread: &chat.Thread{
 			ThreadKey: threadKey,
 		},
@@ -59,15 +65,15 @@ func (c *Client) SendMsg(issueId string, parentIss string, mesg string, changelo
 	return nil
 }
 
-func (c *Client) UpdateMsg(threadKey string, msid string) {
+func (c *Client) UpdateMsg(j Msg) {
 	space := c.space
-	msgId := "client-" + strings.ToLower(msid)
+	msgId := "client-" + strings.ToLower(j.IssueId)
 	name := "spaces/" + space + "/messages/" + msgId
 
 	msg := chat.Message{
 		Text: "Updated",
 		Thread: &chat.Thread{
-			ThreadKey: threadKey,
+			ThreadKey: j.IssueId,
 		},
 	}
 	r, err := c.client.Spaces.Messages.Update(name, &msg).UpdateMask("text").Do()
@@ -87,6 +93,14 @@ func (c *Client) GetMsg(issueId string) (*chat.Message, bool) {
 		log.Println(err)
 		return nil, false
 	}
-	// fmt.Print(res)
 	return res, true
+}
+
+func (c *Client) DelMsg(msgId string) error {
+	_,e := c.client.Spaces.Messages.Delete( "client-" +strings.ToLower(msgId)).Do()
+	if e != nil {
+		log.Println(e)
+		return fmt.Errorf("%v",e)
+	}
+	return nil
 }
