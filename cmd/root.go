@@ -2,24 +2,27 @@ package cmd
 
 import (
 	"fmt"
-	"notify-chat/pkgs"
+	"notify-chat/pkgs/keycloak"
 	"os"
 
 	"github.com/spf13/cobra"
+	"notify-chat/handler"
 )
 
 var rootCmd = &cobra.Command{
 	Use:   "ias-uid",
 	Short: "Get user info from Keycloak",
-	Long: ``,
+	Long:  ``,
 	Run: func(cmd *cobra.Command, args []string) {
 		// Do Stuff Here
+		// google.Init_client()
 	},
 }
 
 func init() {
 	rootCmd.AddCommand(versionCmd)
 	rootCmd.AddCommand(getFedUserIdCmd)
+	rootCmd.AddCommand(chat)
 }
 
 var versionCmd = &cobra.Command{
@@ -42,7 +45,14 @@ var getFedUserIdCmd = &cobra.Command{
 		}
 		fmt.Println(kc.GetFUIdFromUId(args[0]))
 		kc.Logout()
+	},
+}
 
+var chat = &cobra.Command{
+	Use:   "chat",
+	Short: "botchat",
+	Run: func(cmd *cobra.Command, args []string) {
+		handler.Handler()
 	},
 }
 

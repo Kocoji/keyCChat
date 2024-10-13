@@ -4,6 +4,7 @@ import (
 	"github.com/joho/godotenv"
 	"log"
 	"notify-chat/cmd"
+	// "notify-chat/pkgs/jira"
 )
 
 func main() {
@@ -14,4 +15,9 @@ func main() {
 	}
 
 	cmd.Execute()
+	// _,e := jira.GetIssue("SUP-6767")
+
+	// if e != nil {
+	// 	print(e)
+	// }
 }
