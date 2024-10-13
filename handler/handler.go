@@ -6,6 +6,7 @@ import (
 	"log"
 	"notify-chat/pkgs/google"
 	"notify-chat/pkgs/jira"
+	"notify-chat/pkgs/keycloak"
 	"os"
 )
 
@@ -26,13 +27,23 @@ func Handler() error {
 
 	issueName := Payload.Issue.Fields.Summary
 	changeLog := Payload.Changelog.ID
+	userEmail := Payload.User.EmailAddress
 
 	client := google.Init_client()
+
+	kc, err := keycloak.InitKeyCloak()
+	if err != nil {
+		log.Fatalln("Problem when try to access Keycloak")
+	}
+	fedUserId:= kc.GetFUIdFromUId(userEmail)
+	kc.Logout()
 
 	jiraData := google.Msg{
 		IssueId:     issueKey,
 		Summary:     issueName,
 		ChangelogId: changeLog,
+		Descript: Payload.Issue.Fields.Description,
+		UserFedId: fedUserId,
 	}
 
 	switch issueType {
@@ -69,7 +80,7 @@ func Handler() error {
 			// Send Parent Task message
 			client.SendMsg(jiraData, false)
 			// then, send subtask as thread message
-			client.SendMsg(jiraData, false)
+			client.SendMsg(jiraData, true)
 		}
 	}
 	return nil

@@ -33,3 +33,15 @@ This CLI tool does not support interactive mode at the moment, so it strictly re
 │   └── keycloak
 │       └── keycloak.go
 ```
+
+# API sử dụng:
+## Google Chat API
+Auth: Sử dụng Service account, yêu cầu đặt tên: `credentials.json`
+
+Mỗi tin gửi đi sẽ được  đánh `MessageId` (chỉ duy nhất) và `ThreadId` dựa theo Jira Issue Key, với Issue Type là `Sub-DevOps`, `MessageId` sẽ đánh thêm `ChangeLogId`
+
+Vì tin nhắn edit sẽ không mention lại user, nên các changelog liên quan tới task sẽ được gửi mới trong tin nhắn cha.
+
+# Trouble shoot
+
+

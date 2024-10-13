@@ -17,12 +17,14 @@ type Client struct {
 }
 
 type Msg struct {
-	IssueId string
-	ParentId string
-	Descript string
-	Summary string
+	IssueId     string
+	ParentId    string
+	Descript    string
+	Summary     string
 	ChangelogId string
+	UserFedId   string
 }
+
 func Init_client() Client {
 	space := os.Getenv("GC_SPACE")
 
@@ -40,20 +42,25 @@ func Init_client() Client {
 
 // this func use to send a new message, so issueType: Task, DevOps use this func.
 func (c *Client) SendMsg(j Msg, thread bool) error {
-	msgId := "client-" + strings.ToLower(j.IssueId)
-
+	
 	threadKey := j.IssueId
 	spacepath := "spaces/" + c.space
-
+	jira_uri := os.Getenv("JIRA_HOST") + "/browser/" + j.IssueId
+	msgId := ""
+	if (thread == true &&  j.ChangelogId != "") {
+		msgId = "client-" + strings.ToLower(j.IssueId) + "-" + j.ChangelogId
+	} else {
+		msgId = "client-" + strings.ToLower(j.IssueId)
+	}
 	// if parrent not empty, send a message to Parent's thread message.
 	if j.ParentId != "" {
-		// uncommend in 
+		// uncommend in
 		// msgId = "client-" + strings.ToLower(j.IssueId) + "-" + j.ChangelogId
 		threadKey = j.ParentId
 	}
-	fmt.Println("msg id ",msgId)
+	fmt.Println("msg id ", msgId)
 	msg := chat.Message{
-		Text: j.Descript,
+		Text: "Hi <users/" + j.UserFedId + "> This task need an action \n" + j.Summary + "\nLink:" + jira_uri,
 		Thread: &chat.Thread{
 			ThreadKey: threadKey,
 		},
@@ -69,9 +76,10 @@ func (c *Client) UpdateMsg(j Msg) {
 	space := c.space
 	msgId := "client-" + strings.ToLower(j.IssueId)
 	name := "spaces/" + space + "/messages/" + msgId
+	jira_uri := os.Getenv("JIRA_HOST") + "/browser/" + j.IssueId
 
 	msg := chat.Message{
-		Text: "Updated",
+		Text: "Hi <users/" + j.UserFedId + "> This task need an action \n" + j.Summary + "\nLink:" + jira_uri,
 		Thread: &chat.Thread{
 			ThreadKey: j.IssueId,
 		},
@@ -97,10 +105,10 @@ func (c *Client) GetMsg(issueId string) (*chat.Message, bool) {
 }
 
 func (c *Client) DelMsg(msgId string) error {
-	_,e := c.client.Spaces.Messages.Delete( "client-" +strings.ToLower(msgId)).Do()
+	_, e := c.client.Spaces.Messages.Delete("client-" + strings.ToLower(msgId)).Do()
 	if e != nil {
 		log.Println(e)
-		return fmt.Errorf("%v",e)
+		return fmt.Errorf("%v", e)
 	}
 	return nil
 }
