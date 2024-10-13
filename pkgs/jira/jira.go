@@ -81,11 +81,7 @@ type Payload struct {
 					Name      string `json:"name"`
 				} `json:"statusCategory"`
 			} `json:"status"`
-			Customfield11017      interface{} `json:"customfield_11017"`
-			Aggregatetimeestimate interface{} `json:"aggregatetimeestimate"`
-			Customfield11090      interface{} `json:"customfield_11090"`
-			Customfield11091      interface{} `json:"customfield_11091"`
-			Creator               struct {
+			Creator struct {
 				Name         string `json:"name"`
 				Key          string `json:"key"`
 				EmailAddress string `json:"emailAddress"`
@@ -125,7 +121,6 @@ type Payload struct {
 			Created          string      `json:"created"`
 			Updated          string      `json:"updated"`
 			Description      string      `json:"description"`
-			Customfield10011 string      `json:"customfield_10011"`
 			Customfield11500 string      `json:"customfield_11500"` //branch name
 			Summary          string      `json:"summary"`
 			Duedate          interface{} `json:"duedate"`
@@ -203,9 +198,10 @@ type Response struct {
 func GetIssue(issueId string) (res Response, err error) {
 
 	extraFields := "?fields=status,creator,assignee,customfield_11403,summary,description"
+	jHost := os.Getenv("JIRA_HOST")
 	jiraToken := os.Getenv("JIRA_TOKEN")
 
-	url := "https://task.sendo.vn/rest/api/2/issue/" + issueId + extraFields
+	url := jHost + "/rest/api/2/issue/" + issueId + extraFields
 	method := "GET"
 
 	client := &http.Client{}
