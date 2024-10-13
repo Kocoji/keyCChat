@@ -47,7 +47,7 @@ func (c *Client) SendMsg(j Msg, thread bool) error {
 	spacepath := "spaces/" + c.space
 	jira_uri := os.Getenv("JIRA_HOST") + "/browser/" + j.IssueId
 	msgId := ""
-	if (thread == true &&  j.ChangelogId != "") {
+	if (thread) &&  (j.ChangelogId != "") {
 		msgId = "client-" + strings.ToLower(j.IssueId) + "-" + j.ChangelogId
 	} else {
 		msgId = "client-" + strings.ToLower(j.IssueId)
