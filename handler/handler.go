@@ -54,9 +54,10 @@ func Handler() error {
 		if exist {
 			log.Println("exist")
 			// Update the main message and send a new one in the thread, mentioning the assignee
-			client.DelMsg(issueKey)
-			// client.UpdateMsg(jiraData, false)
+			// client.DelMsg(issueKey)
+			client.UpdateMsg(jiraData)
 			client.SendMsg(jiraData, true)
+
 		} else {
 			// in the create new msg with the same issuekey
 			client.SendMsg(jiraData, false)

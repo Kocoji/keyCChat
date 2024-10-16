@@ -44,17 +44,17 @@ func Init_client() Client {
 // this func use to send a new message, so issueType: Task, DevOps use this func.
 func (c *Client) SendMsg(j Msg, thread bool) error {
 
-	threadKey := ""
+	threadKey := j.IssueId
 	spacepath := "spaces/" + c.space
 	jira_uri := os.Getenv("JIRA_HOST") + "/browse/" + j.IssueId
 	summary := j.Summary
 	msgId := "client-" + strings.ToLower(j.IssueId)
-	if thread || (j.ParentId != "") {
-		// msgId = "client-" + strings.ToLower(j.IssueId) + "-" + j.ChangelogId
-		threadKey = j.ParentId
-	} else {
-		threadKey = j.IssueId
-		// msgId = "client-" + strings.ToLower(j.IssueId)
+	if thread {
+		if j.ParentId == "" {
+			msgId = "client-" + strings.ToLower(j.IssueId) + j.ChangelogId
+		} else {
+			threadKey = j.ParentId
+		}
 	}
 	fmt.Println("msg id ", msgId)
 	msg := chat.Message{
