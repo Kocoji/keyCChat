@@ -27,7 +27,7 @@ func Handler() error {
 
 	issueName := Payload.Issue.Fields.Summary
 	changeLog := Payload.Changelog.ID
-	userEmail := Payload.User.EmailAddress
+	userEmail := Payload.Issue.Fields.Assignee.EmailAddress
 
 	client := google.Init_client()
 
@@ -35,15 +35,17 @@ func Handler() error {
 	if err != nil {
 		log.Fatalln("Problem when try to access Keycloak")
 	}
-	fedUserId:= kc.GetFUIdFromUId(userEmail)
+	fedUserId := kc.GetFUIdFromUId(userEmail)
 	kc.Logout()
 
 	jiraData := google.Msg{
 		IssueId:     issueKey,
 		Summary:     issueName,
 		ChangelogId: changeLog,
-		Descript: Payload.Issue.Fields.Description,
-		UserFedId: fedUserId,
+		Descript:    Payload.Issue.Fields.Description,
+		UserFedId:   fedUserId,
+		Status:      Payload.Issue.Fields.Status.Name,
+		ParentId:    Payload.Issue.Fields.Parent.Key,
 	}
 
 	switch issueType {
@@ -52,8 +54,10 @@ func Handler() error {
 		if exist {
 			log.Println("exist")
 			// Update the main message and send a new one in the thread, mentioning the assignee
+			// client.DelMsg(issueKey)
 			client.UpdateMsg(jiraData)
 			client.SendMsg(jiraData, true)
+
 		} else {
 			// in the create new msg with the same issuekey
 			client.SendMsg(jiraData, false)
@@ -61,7 +65,15 @@ func Handler() error {
 	case "Subtask", "Sub-DevOps":
 		parentIssue := Payload.Issue.Fields.Parent.Key
 		res, e := jira.GetIssue(parentIssue)
-		parentIssueSum := res.Fields.Summary
+
+		jiraParent := google.Msg{
+			IssueId:     parentIssue,
+			Summary:     res.Fields.Summary,
+			ChangelogId: changeLog,
+			Descript:    Payload.Issue.Fields.Description,
+			UserFedId:   fedUserId,
+			Status:      res.Fields.Status.Name,
+		}
 
 		if e != nil {
 			log.Println(e)
@@ -69,17 +81,24 @@ func Handler() error {
 		_, exist := client.GetMsg(parentIssue)
 		if exist {
 			log.Println("This exist")
-
 			// Update Parent task's status
-			client.UpdateMsg(jiraData)
+			client.UpdateMsg(jiraParent)
 			// then send subtask as thread message.
-			client.SendMsg(jiraData, false)
+			_, exist := client.GetMsg(issueKey)
+			if exist {
+				client.DelMsg(issueKey)
+			}
+			client.SendMsg(jiraData, true)
 		} else {
-			jiraData.Summary = parentIssueSum
 			// the create new msg with the same issuekey
 			// Send Parent Task message
-			client.SendMsg(jiraData, false)
+			client.SendMsg(jiraParent, false)
 			// then, send subtask as thread message
+
+			_, exist := client.GetMsg(issueKey)
+			if exist {
+				client.DelMsg(issueKey)
+			}
 			client.SendMsg(jiraData, true)
 		}
 	}
