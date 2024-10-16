@@ -35,16 +35,16 @@ func Handler() error {
 	if err != nil {
 		log.Fatalln("Problem when try to access Keycloak")
 	}
-	fedUserId:= kc.GetFUIdFromUId(userEmail)
+	fedUserId := kc.GetFUIdFromUId(userEmail)
 	kc.Logout()
 
 	jiraData := google.Msg{
 		IssueId:     issueKey,
 		Summary:     issueName,
 		ChangelogId: changeLog,
-		Descript: Payload.Issue.Fields.Description,
-		UserFedId: fedUserId,
-		Status: Payload.Issue.Fields.Status.Name,
+		Descript:    Payload.Issue.Fields.Description,
+		UserFedId:   fedUserId,
+		Status:      Payload.Issue.Fields.Status.Name,
 	}
 
 	switch issueType {
@@ -53,7 +53,8 @@ func Handler() error {
 		if exist {
 			log.Println("exist")
 			// Update the main message and send a new one in the thread, mentioning the assignee
-			client.UpdateMsg(jiraData)
+			client.DelMsg(issueKey)
+			// client.UpdateMsg(jiraData, false)
 			client.SendMsg(jiraData, true)
 		} else {
 			// in the create new msg with the same issuekey
@@ -62,7 +63,8 @@ func Handler() error {
 	case "Subtask", "Sub-DevOps":
 		parentIssue := Payload.Issue.Fields.Parent.Key
 		res, e := jira.GetIssue(parentIssue)
-		parentIssueSum := res.Fields.Summary
+		jiraData.Psummary = res.Fields.Summary
+		jiraData.ParentId = parentIssue
 
 		if e != nil {
 			log.Println(e)
@@ -72,16 +74,24 @@ func Handler() error {
 			log.Println("This exist")
 
 			// Update Parent task's status
-			client.UpdateMsg(jiraData)
+			client.UpdateMsg(jiraData, true)
 			// then send subtask as thread message.
+			_, exist := client.GetMsg(issueKey)
+			if exist {
+				client.DelMsg(issueKey)
+			}
 			client.SendMsg(jiraData, false)
 		} else {
-			jiraData.Summary = parentIssueSum
 			// the create new msg with the same issuekey
 			// Send Parent Task message
-			client.SendMsg(jiraData, false)
-			// then, send subtask as thread message
 			client.SendMsg(jiraData, true)
+			// then, send subtask as thread message
+
+			_, exist := client.GetMsg(issueKey)
+			if exist {
+				client.DelMsg(issueKey)
+			}
+			client.SendMsg(jiraData, false)
 		}
 	}
 	return nil

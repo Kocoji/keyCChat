@@ -21,6 +21,7 @@ type Msg struct {
 	ParentId    string
 	Descript    string
 	Summary     string
+	Psummary    string
 	ChangelogId string
 	UserFedId   string
 	Status      string
@@ -42,26 +43,31 @@ func Init_client() Client {
 }
 
 // this func use to send a new message, so issueType: Task, DevOps use this func.
-func (c *Client) SendMsg(j Msg, thread bool) error {
+func (c *Client) SendMsg(j Msg, parent bool) error {
 
-	threadKey := j.IssueId
+	threadKey := ""
 	spacepath := "spaces/" + c.space
 	jira_uri := os.Getenv("JIRA_HOST") + "/browse/" + j.IssueId
-	msgId := ""
-	if (thread) && (j.ChangelogId != "") {
-		msgId = "client-" + strings.ToLower(j.IssueId) + "-" + j.ChangelogId
-	} else {
-		msgId = "client-" + strings.ToLower(j.IssueId)
-	}
-	// if parrent not empty, send a message to Parent's thread message.
-	if j.ParentId != "" {
-		// uncommend in
+	sumary := ""
+	msgId := "client-" + strings.ToLower(j.IssueId)
+	if parent || (j.ParentId != "") {
 		// msgId = "client-" + strings.ToLower(j.IssueId) + "-" + j.ChangelogId
 		threadKey = j.ParentId
+		sumary = j.Psummary
+	} else {
+		threadKey = j.IssueId
+		sumary = j.Summary
+		// msgId = "client-" + strings.ToLower(j.IssueId)
 	}
+	// if parrent not empty, send a message to Parent's thread message.
+	// if j.ParentId != "" {
+	// 	// uncommend in
+	// 	// msgId = "client-" + strings.ToLower(j.IssueId) + "-" + j.ChangelogId
+	// 	threadKey = j.ParentId
+	// }
 	fmt.Println("msg id ", msgId)
 	msg := chat.Message{
-		Text: "Hi <users/" + j.UserFedId + "> This task need your action \nCurent Status:"+j.Status+"\n" + j.Summary + "\nLink:" + jira_uri,
+		Text: "Hi <users/" + j.UserFedId + "> This task need your action \nCurent Status:" + j.Status + "\n" + sumary + "\nLink:" + jira_uri,
 		Thread: &chat.Thread{
 			ThreadKey: threadKey,
 		},
@@ -73,16 +79,23 @@ func (c *Client) SendMsg(j Msg, thread bool) error {
 	return nil
 }
 
-func (c *Client) UpdateMsg(j Msg) {
+func (c *Client) UpdateMsg(j Msg, thread bool) {
 	space := c.space
-	msgId := "client-" + strings.ToLower(j.IssueId)
+	threadKey := j.IssueId
+	msgId := ""
+	if thread {
+		msgId = "client-" + strings.ToLower(j.IssueId) + "-" + j.ChangelogId
+		threadKey = j.ParentId
+	} else {
+		msgId = "client-" + strings.ToLower(j.IssueId)
+	}
 	name := "spaces/" + space + "/messages/" + msgId
 	jira_uri := os.Getenv("JIRA_HOST") + "/browse/" + j.IssueId
 
 	msg := chat.Message{
-		Text: "Hi <users/" + j.UserFedId + "> This task need your action \nCurent Status:"+j.Status+"\n" + j.Summary + "\nLink:" + jira_uri,
+		Text: "Hi <users/" + j.UserFedId + "> This task need your action \nCurent Status:" + j.Status + "\n" + j.Psummary + "\nLink:" + jira_uri,
 		Thread: &chat.Thread{
-			ThreadKey: j.IssueId,
+			ThreadKey: threadKey,
 		},
 	}
 	r, err := c.client.Spaces.Messages.Update(name, &msg).UpdateMask("text").Do()
