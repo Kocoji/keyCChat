@@ -29,7 +29,7 @@ var versionCmd = &cobra.Command{
 	Use:   "version",
 	Short: "not yet",
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("1.3.2-dev.4 -- HEAD")
+		fmt.Println("1.3.2 -- HEAD")
 	},
 }
 
