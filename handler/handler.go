@@ -45,6 +45,7 @@ func Handler() error {
 		Descript:    Payload.Issue.Fields.Description,
 		UserFedId:   fedUserId,
 		Status:      Payload.Issue.Fields.Status.Name,
+		ParentId:    Payload.Issue.Fields.Parent.Key,
 	}
 
 	switch issueType {
@@ -63,8 +64,15 @@ func Handler() error {
 	case "Subtask", "Sub-DevOps":
 		parentIssue := Payload.Issue.Fields.Parent.Key
 		res, e := jira.GetIssue(parentIssue)
-		jiraData.Psummary = res.Fields.Summary
-		jiraData.ParentId = parentIssue
+
+		jiraParent := google.Msg{
+			IssueId:     parentIssue,
+			Summary:     res.Fields.Summary,
+			ChangelogId: changeLog,
+			Descript:    Payload.Issue.Fields.Description,
+			UserFedId:   fedUserId,
+			Status:      res.Fields.Status.Name,
+		}
 
 		if e != nil {
 			log.Println(e)
@@ -72,26 +80,25 @@ func Handler() error {
 		_, exist := client.GetMsg(parentIssue)
 		if exist {
 			log.Println("This exist")
-
 			// Update Parent task's status
-			client.UpdateMsg(jiraData, true)
+			client.UpdateMsg(jiraParent)
 			// then send subtask as thread message.
 			_, exist := client.GetMsg(issueKey)
 			if exist {
 				client.DelMsg(issueKey)
 			}
-			client.SendMsg(jiraData, false)
+			client.SendMsg(jiraData, true)
 		} else {
 			// the create new msg with the same issuekey
 			// Send Parent Task message
-			client.SendMsg(jiraData, true)
+			client.SendMsg(jiraParent, false)
 			// then, send subtask as thread message
 
 			_, exist := client.GetMsg(issueKey)
 			if exist {
 				client.DelMsg(issueKey)
 			}
-			client.SendMsg(jiraData, false)
+			client.SendMsg(jiraData, true)
 		}
 	}
 	return nil
