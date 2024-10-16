@@ -23,6 +23,7 @@ type Msg struct {
 	Summary     string
 	ChangelogId string
 	UserFedId   string
+	Status      string
 }
 
 func Init_client() Client {
@@ -42,12 +43,12 @@ func Init_client() Client {
 
 // this func use to send a new message, so issueType: Task, DevOps use this func.
 func (c *Client) SendMsg(j Msg, thread bool) error {
-	
+
 	threadKey := j.IssueId
 	spacepath := "spaces/" + c.space
-	jira_uri := os.Getenv("JIRA_HOST") + "/browser/" + j.IssueId
+	jira_uri := os.Getenv("JIRA_HOST") + "/browse/" + j.IssueId
 	msgId := ""
-	if (thread) &&  (j.ChangelogId != "") {
+	if (thread) && (j.ChangelogId != "") {
 		msgId = "client-" + strings.ToLower(j.IssueId) + "-" + j.ChangelogId
 	} else {
 		msgId = "client-" + strings.ToLower(j.IssueId)
@@ -60,7 +61,7 @@ func (c *Client) SendMsg(j Msg, thread bool) error {
 	}
 	fmt.Println("msg id ", msgId)
 	msg := chat.Message{
-		Text: "Hi <users/" + j.UserFedId + "> This task need an action \n" + j.Summary + "\nLink:" + jira_uri,
+		Text: "Hi <users/" + j.UserFedId + "> This task need your action \nCurent Status:"+j.Status+"\n" + j.Summary + "\nLink:" + jira_uri,
 		Thread: &chat.Thread{
 			ThreadKey: threadKey,
 		},
@@ -76,10 +77,10 @@ func (c *Client) UpdateMsg(j Msg) {
 	space := c.space
 	msgId := "client-" + strings.ToLower(j.IssueId)
 	name := "spaces/" + space + "/messages/" + msgId
-	jira_uri := os.Getenv("JIRA_HOST") + "/browser/" + j.IssueId
+	jira_uri := os.Getenv("JIRA_HOST") + "/browse/" + j.IssueId
 
 	msg := chat.Message{
-		Text: "Hi <users/" + j.UserFedId + "> This task need an action \n" + j.Summary + "\nLink:" + jira_uri,
+		Text: "Hi <users/" + j.UserFedId + "> This task need your action \nCurent Status:"+j.Status+"\n" + j.Summary + "\nLink:" + jira_uri,
 		Thread: &chat.Thread{
 			ThreadKey: j.IssueId,
 		},

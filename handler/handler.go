@@ -27,7 +27,7 @@ func Handler() error {
 
 	issueName := Payload.Issue.Fields.Summary
 	changeLog := Payload.Changelog.ID
-	userEmail := Payload.User.EmailAddress
+	userEmail := Payload.Issue.Fields.Assignee.EmailAddress
 
 	client := google.Init_client()
 
@@ -44,6 +44,7 @@ func Handler() error {
 		ChangelogId: changeLog,
 		Descript: Payload.Issue.Fields.Description,
 		UserFedId: fedUserId,
+		Status: Payload.Issue.Fields.Status.Name,
 	}
 
 	switch issueType {
