@@ -49,7 +49,7 @@ func (c *Client) SendMsg(j Msg, thread bool) error {
 	jira_uri := os.Getenv("JIRA_HOST") + "/browse/" + j.IssueId
 	summary := j.Summary
 	msgId := "client-" + strings.ToLower(j.IssueId)
-	message := "Hi <users/" + j.UserFedId + "> This task need your action \nCurent Status:" + j.Status + "\n" + summary + "\nLink:" + jira_uri
+	message := "Hi <users/" + j.UserFedId + "> This task need your action \nStatus:" + j.Status + "\n*" + summary + "* \nLink:" + jira_uri
 	if thread {
 		if j.ParentId == "" {
 			msgId = "client-" + strings.ToLower(j.IssueId) + j.ChangelogId
