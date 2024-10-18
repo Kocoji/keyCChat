@@ -49,16 +49,18 @@ func (c *Client) SendMsg(j Msg, thread bool) error {
 	jira_uri := os.Getenv("JIRA_HOST") + "/browse/" + j.IssueId
 	summary := j.Summary
 	msgId := "client-" + strings.ToLower(j.IssueId)
+	message := "Hi <users/" + j.UserFedId + "> This task need your action \nCurent Status:" + j.Status + "\n" + summary + "\nLink:" + jira_uri
 	if thread {
 		if j.ParentId == "" {
 			msgId = "client-" + strings.ToLower(j.IssueId) + j.ChangelogId
+			message = "Hi <users/" + j.UserFedId + "> , The status of this task has changed to " + j.Status
 		} else {
 			threadKey = j.ParentId
 		}
 	}
 	fmt.Println("msg id ", msgId)
 	msg := chat.Message{
-		Text: "Hi <users/" + j.UserFedId + "> This task need your action \nCurent Status:" + j.Status + "\n" + summary + "\nLink:" + jira_uri,
+		Text: message,
 		Thread: &chat.Thread{
 			ThreadKey: threadKey,
 		},
@@ -78,9 +80,9 @@ func (c *Client) UpdateMsg(j Msg) {
 
 	name := "spaces/" + space + "/messages/" + msgId
 	jira_uri := os.Getenv("JIRA_HOST") + "/browse/" + j.IssueId
-
+	message := "Hi <users/" + j.UserFedId + "> This task need your action \nStatus:" + j.Status + "\n" + summary + "\nLink:" + jira_uri
 	msg := chat.Message{
-		Text: "Hi <users/" + j.UserFedId + "> This task need your action \nCurent Status:" + j.Status + "\n" + summary + "\nLink:" + jira_uri,
+		Text: message,
 		Thread: &chat.Thread{
 			ThreadKey: threadKey,
 		},
